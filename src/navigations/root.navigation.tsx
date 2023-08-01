@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
@@ -73,6 +74,7 @@ const RootNavigation = () => {
   React.useEffect(() => {
     void initUsersStorage();
     void initRemindersStorage();
+    PushNotificationIOS.removeAllPendingNotificationRequests();
   }, []);
 
   return (

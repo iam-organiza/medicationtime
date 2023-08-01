@@ -8,11 +8,12 @@ export type TimeOfDay = {
 };
 
 export interface IReminder {
+  id: string;
   name: string;
-    dosage: string;
-    frequency: string;
-    timeOfDay: TimeOfDay;
-    addedBy: string;
+  dosage: string;
+  frequency: string;
+  timeOfDay: number;
+  addedBy: string;
 }
 
 interface IRemindersState {

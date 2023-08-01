@@ -1,3 +1,5 @@
+import PushNotificationIOS from "@react-native-community/push-notification-ios";
+import { IReminder } from "../features/reminders.feature";
 
 export function isEmailValid(email: string): boolean {
     const expression: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -33,4 +35,30 @@ export function isReminderFrequencyValid(frequency: string) {
     }
 
     return true;
+}
+
+export function getDifferenceInSeconds(date1: Date, date2: Date) {
+    const diffInMs = Math.abs(date2.getTime() - date1.getTime());
+    return diffInMs / 1000;
+  }
+
+export function handleScheduleNotification(reminder: IReminder) {
+    const date = new Date(reminder.timeOfDay);
+    
+    PushNotificationIOS.addNotificationRequest({
+        id: reminder.id,
+        title: 'Medication Time',
+        body: reminder.name,
+        fireDate: date,
+        repeats: true,
+        repeatsComponent: {
+            day: true
+        },
+    });
+
+    PushNotificationIOS.removePendingNotificationRequests([])
+}
+
+export function removeScheduleNotification(identifiers: string[]) {
+    PushNotificationIOS.removePendingNotificationRequests([...identifiers]);
 }

@@ -15,11 +15,12 @@ import routes from '../constants/routes';
 import storageKeys from '../constants/storage.keys';
 import {selectToken} from '../features/auth.feature';
 import {
-  IReminder,
   initReminders,
+  IReminder,
   selectReminders,
 } from '../features/reminders.feature';
 import {RootStackParamList} from '../navigations/root.navigation';
+import {removeScheduleNotification} from '../utils/helper.util';
 
 const RemindersScreen = () => {
   const {navigate} =
@@ -45,6 +46,7 @@ const RemindersScreen = () => {
         JSON.stringify(remindersCopy),
       );
       dispatch(initReminders(remindersCopy));
+      removeScheduleNotification([reminders[name].id]);
     } catch (e) {
       // remove error
     }
@@ -122,10 +124,7 @@ const RemindersScreen = () => {
                       fontFamily={'Poppins'}
                       fontSize={13}
                       color={palette.basicGrey}>
-                      Time of day:{' '}
-                      {reminders[key].timeOfDay.morning && 'Morning '}
-                      {reminders[key].timeOfDay.afternoon && 'Afternoon '}
-                      {reminders[key].timeOfDay.evening && 'Evening '}
+                      Time of day: {reminders[key].timeOfDay}
                     </Text>
                   </VStack>
                 </Swipeable>

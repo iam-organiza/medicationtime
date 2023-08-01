@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import {useNavigation} from '@react-navigation/native';
 import {
   Alert,
@@ -14,19 +15,19 @@ import {
 } from 'native-base';
 import React from 'react';
 import {Keyboard, Pressable} from 'react-native';
-import BouncyCheckbox from 'react-native-bouncy-checkbox';
+import uuid from 'react-native-uuid';
 import {useDispatch, useSelector} from 'react-redux';
 import {AppDispatch} from '../../store';
 import Layout from '../components/layout/layout.component';
-import palette from '../constants/palette.constant';
 import storageKeys from '../constants/storage.keys';
 import {selectToken} from '../features/auth.feature';
 import {
-  IReminder,
   addReminder,
+  IReminder,
   selectReminders,
 } from '../features/reminders.feature';
 import {
+  handleScheduleNotification,
   isReminderDosageValid,
   isReminderFrequencyValid,
   isReminderNameValid,
@@ -39,14 +40,11 @@ const AddRemindersScreen = () => {
   const token = useSelector(selectToken);
 
   const [payload, setPayload] = React.useState<IReminder>({
+    id: `${uuid.v4()}`,
     name: '',
     dosage: '',
     frequency: '',
-    timeOfDay: {
-      morning: false,
-      afternoon: false,
-      evening: false,
-    },
+    timeOfDay: new Date().getTime(),
     addedBy: token!,
   });
   const [submitting, setSubmitting] = React.useState(false);
@@ -77,14 +75,14 @@ const AddRemindersScreen = () => {
       return;
     }
 
-    const isReminderTimeOfDayValid = Object.entries(payload.timeOfDay).some(
-      ([key, value]) => value,
-    );
+    // const isReminderTimeOfDayValid = Object.entries(payload.timeOfDay).some(
+    //   ([key, value]) => value,
+    // );
 
-    if (!isReminderTimeOfDayValid) {
-      setisTimeOfDayInputInvalid(true);
-      return;
-    }
+    // if (!isReminderTimeOfDayValid) {
+    //   setisTimeOfDayInputInvalid(true);
+    //   return;
+    // }
 
     setSubmitting(true);
     try {
@@ -101,14 +99,11 @@ const AddRemindersScreen = () => {
       dispatch(addReminder(payload));
       setAddReminderSuccessMsg('Reminder added successfully.');
       setPayload({
+        id: `${uuid.v4()}`,
         name: '',
         dosage: '',
         frequency: '',
-        timeOfDay: {
-          morning: false,
-          afternoon: false,
-          evening: false,
-        },
+        timeOfDay: new Date().getTime(),
         addedBy: token!,
       });
       setIsNameInputInvalid(false);
@@ -116,6 +111,8 @@ const AddRemindersScreen = () => {
       setisFrequencyInputInvalid(false);
       setisTimeOfDayInputInvalid(false);
       setSubmitting(false);
+
+      handleScheduleNotification(payload);
     } catch (e) {
       console.warn(e);
       setSubmitting(false);
@@ -287,7 +284,23 @@ const AddRemindersScreen = () => {
               </Text>
               <FormControl isRequired isInvalid={isTimeOfDayInputInvalid}>
                 <VStack space={2}>
-                  <BouncyCheckbox
+                  <DateTimePicker
+                    testID="dateTimePicker"
+                    value={new Date(payload.timeOfDay)}
+                    mode={'time'}
+                    is24Hour={true}
+                    onChange={(event, selectedDate) => {
+                      const currentDate = selectedDate;
+
+                      if (currentDate) {
+                        setPayload(prev => ({
+                          ...prev,
+                          timeOfDay: currentDate.getTime(),
+                        }));
+                      }
+                    }}
+                  />
+                  {/* <BouncyCheckbox
                     fillColor="#0e7490"
                     iconStyle={{borderColor: 'red'}}
                     innerIconStyle={{
@@ -355,7 +368,7 @@ const AddRemindersScreen = () => {
                         timeOfDay: {...prev.timeOfDay, evening: isChecked},
                       }));
                     }}
-                  />
+                  /> */}
                 </VStack>
                 <FormControl.ErrorMessage
                   leftIcon={<WarningOutlineIcon size="xs" />}>

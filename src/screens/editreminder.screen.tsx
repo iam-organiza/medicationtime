@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {
   Alert,
@@ -14,28 +15,30 @@ import {
 } from 'native-base';
 import React from 'react';
 import {Keyboard, Pressable} from 'react-native';
-import BouncyCheckbox from 'react-native-bouncy-checkbox';
+import uuid from 'react-native-uuid';
 import {useDispatch, useSelector} from 'react-redux';
 import {AppDispatch} from '../../store';
 import Layout from '../components/layout/layout.component';
-import palette from '../constants/palette.constant';
 import storageKeys from '../constants/storage.keys';
 import {selectToken} from '../features/auth.feature';
 import {
-  IReminder,
   initReminders,
+  IReminder,
   selectReminders,
 } from '../features/reminders.feature';
 import {RootStackParamList} from '../navigations/root.navigation';
 import {
+  handleScheduleNotification,
   isReminderDosageValid,
   isReminderFrequencyValid,
   isReminderNameValid,
+  removeScheduleNotification,
 } from '../utils/helper.util';
 
 const EditRemindersScreen = () => {
   const {goBack} = useNavigation();
   const dispatch = useDispatch<AppDispatch>();
+  const [date, setDate] = React.useState(new Date());
   const reminders = useSelector(selectReminders);
   const token = useSelector(selectToken);
   const {
@@ -44,14 +47,11 @@ const EditRemindersScreen = () => {
   const reminder = reminders[name];
 
   const [payload, setPayload] = React.useState<IReminder>({
+    id: `${uuid.v4()}`,
     name: reminder.name,
     dosage: reminder.dosage,
     frequency: reminder.frequency,
-    timeOfDay: {
-      morning: reminder.timeOfDay.morning,
-      afternoon: reminder.timeOfDay.afternoon,
-      evening: reminder.timeOfDay.evening,
-    },
+    timeOfDay: new Date(reminder.timeOfDay).getTime(),
     addedBy: token!,
   });
 
@@ -83,14 +83,14 @@ const EditRemindersScreen = () => {
       return;
     }
 
-    const isReminderTimeOfDayValid = Object.entries(payload.timeOfDay).some(
-      ([key, value]) => value,
-    );
+    // const isReminderTimeOfDayValid = Object.entries(payload.timeOfDay).some(
+    //   ([key, value]) => value,
+    // );
 
-    if (!isReminderTimeOfDayValid) {
-      setisTimeOfDayInputInvalid(true);
-      return;
-    }
+    // if (!isReminderTimeOfDayValid) {
+    //   setisTimeOfDayInputInvalid(true);
+    //   return;
+    // }
 
     const remindersCopy: Record<string, IReminder> = {...reminders};
 
@@ -107,6 +107,8 @@ const EditRemindersScreen = () => {
       dispatch(initReminders(remindersCopy));
       setAddReminderSuccessMsg('Reminder Updated');
       setSubmitting(false);
+      removeScheduleNotification([reminder.id]);
+      handleScheduleNotification(payload);
     } catch (e) {
       // remove error
       setSubmitting(false);
@@ -132,7 +134,7 @@ const EditRemindersScreen = () => {
       <VStack flex={1} space={12} p={3}>
         <HStack alignItems={'center'} justifyContent={'space-between'}>
           <Text fontFamily={'Poppins'} fontSize={24} fontWeight={500}>
-            Add Reminder
+            Edit Reminder
           </Text>
           <Pressable onPress={() => goBack()}>
             <CloseIcon color={'black'} size={5} />
@@ -278,7 +280,23 @@ const EditRemindersScreen = () => {
               </Text>
               <FormControl isRequired isInvalid={isTimeOfDayInputInvalid}>
                 <VStack space={2}>
-                  <BouncyCheckbox
+                  <DateTimePicker
+                    testID="dateTimePicker"
+                    value={new Date(payload.timeOfDay)}
+                    mode={'time'}
+                    is24Hour={true}
+                    onChange={(event, selectedDate) => {
+                      const currentDate = selectedDate;
+
+                      if (currentDate) {
+                        setPayload(prev => ({
+                          ...prev,
+                          timeOfDay: currentDate.getTime(),
+                        }));
+                      }
+                    }}
+                  />
+                  {/* <BouncyCheckbox
                     fillColor="#0e7490"
                     iconStyle={{borderColor: 'red'}}
                     innerIconStyle={{
@@ -346,7 +364,7 @@ const EditRemindersScreen = () => {
                         timeOfDay: {...prev.timeOfDay, evening: isChecked},
                       }));
                     }}
-                  />
+                  /> */}
                 </VStack>
                 <FormControl.ErrorMessage
                   leftIcon={<WarningOutlineIcon size="xs" />}>
