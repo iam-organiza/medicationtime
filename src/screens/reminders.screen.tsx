@@ -1,5 +1,4 @@
 import {DeleteIcon, HStack, Icon, ScrollView, Text, VStack} from 'native-base';
-import React from 'react';
 import {Pressable} from 'react-native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
@@ -27,8 +26,6 @@ const RemindersScreen = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
   const reminders = useSelector(selectReminders);
-  console.log(reminders);
-
   const token = useSelector(selectToken);
 
   async function delReminder(name: string) {

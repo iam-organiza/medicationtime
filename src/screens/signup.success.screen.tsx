@@ -198,7 +198,6 @@ const CongratsSvg: React.FC<any> = () => (
 
 const SignupSuccessScreeen: React.FC<any> = () => {
   const users = useSelector(selectUsers);
-  console.log(users);
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const navigation =
