@@ -44,16 +44,23 @@ export function getDifferenceInSeconds(date1: Date, date2: Date) {
 
 export function handleScheduleNotification(reminder: IReminder) {
     const date = new Date(reminder.timeOfDay);
-    
-    PushNotificationIOS.addNotificationRequest({
-        id: reminder.id,
-        title: 'Medication Time',
-        body: reminder.name,
-        fireDate: date,
-        repeats: true,
-        repeatsComponent: {
-            day: true
-        },
+    date.setSeconds(date.getSeconds() + 0);
+    // PushNotificationIOS.addNotificationRequest({
+    //     id: reminder.id,
+    //     title: 'Medication Time',
+    //     body: reminder.name,
+    //     fireDate: date,
+    //     repeats: true,
+    //     repeatsComponent: {
+    //         day: true
+    //     },
+    // });
+
+    PushNotificationIOS.scheduleLocalNotification({
+        alertTitle: 'Medication Time',
+        alertBody: reminder.name,
+        fireDate: date.toISOString(),
+        repeatInterval: 'day',
     });
 
     PushNotificationIOS.removePendingNotificationRequests([])
